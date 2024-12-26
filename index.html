@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple JS Visual CPU Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        .registers, .program, .inputs {
+            margin-top: 20px;
+        }
+        .registers span, .program span, .inputs span {
+            display: block;
+            margin: 5px;
+        }
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .highlight {
+            color: red;
+            font-weight: bold;
+        }
+        .instruction {
+            font-size: 16px;
+            font-weight: normal;
+        }
+        .program-text {
+            margin-top: 15px;
+        }
+        .program-text span {
+            margin-left: 20px;
+        }
+        .program-step {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visual CPU Simulator - Add Two Numbers</h1>
+        
+        <div class="inputs">
+            <h3>Enter Two Numbers</h3>
+            <span>
+                <label for="input1">Number 1: </label>
+                <input type="number" id="input1" value="0">
+            </span>
+            <span>
+                <label for="input2">Number 2: </label>
+                <input type="number" id="input2" value="0">
+            </span>
+            <button onclick="startExecution()">Execute ADD Operation</button>
+        </div>
+
+        <div class="registers">
+            <h3>Registers</h3>
+            <span>R0: <span id="R0">0</span></span>
+            <span>R1: <span id="R1">0</span></span>
+            <span>R2: <span id="R2">0</span></span>
+            <span>PC (Program Counter): <span id="PC">0</span></span>
+        </div>
+
+        <div class="program">
+            <h3>Program (Instructions)</h3>
+            <div class="program-text">
+                <span id="step1" class="instruction">1. MOV R0, Number1</span>
+                <span id="step2" class="instruction">2. MOV R1, Number2</span>
+                <span id="step3" class="instruction">3. ADD R0, R1</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated CPU Registers
+        let registers = {
+            R0: 0,
+            R1: 0,
+            R2: 0
+        };
+
+        // Program Counter (PC)
+        let PC = 0;
+
+        // Program Instructions
+        let program = [
+            { instruction: "MOV", operand1: "R0", operand2: 0 }, // MOV Number1 to R0
+            { instruction: "MOV", operand1: "R1", operand2: 0 }, // MOV Number2 to R1
+            { instruction: "ADD", operand1: "R0", operand2: "R1" }, // ADD R1 to R0
+        ];
+
+        // Update Register Display
+        function updateRegisters() {
+            document.getElementById('R0').textContent = registers.R0;
+            document.getElementById('R1').textContent = registers.R1;
+            document.getElementById('R2').textContent = registers.R2;
+            document.getElementById('PC').textContent = PC;
+        }
+
+        // Highlight current instruction step
+        function highlightInstruction(step) {
+            // Reset previous highlighted instruction
+            const instructions = document.querySelectorAll('.instruction');
+            instructions.forEach(instruction => {
+                instruction.classList.remove('highlight');
+            });
+
+            // Highlight current step
+            const currentStep = document.getElementById('step' + step);
+            if (currentStep) {
+                currentStep.classList.add('highlight');
+            }
+        }
+
+        // Execute a single instruction
+        function executeInstruction(instruction) {
+            const { instruction: cmd, operand1, operand2 } = instruction;
+
+            if (cmd === "MOV") {
+                // If operand2 is a number, move it directly to the register
+                registers[operand1] = operand2;
+            } else if (cmd === "ADD") {
+                // ADD the value of operand2 (register) to operand1 (register)
+                registers[operand1] += registers[operand2];
+            }
+
+            PC++; // Increment Program Counter after executing an instruction
+        }
+
+        // Start CPU Execution
+        function startExecution() {
+            const num1 = parseInt(document.getElementById('input1').value, 10);
+            const num2 = parseInt(document.getElementById('input2').value, 10);
+
+            // Reset registers and program counter
+            PC = 0;
+            registers = { R0: 0, R1: 0, R2: 0 };
+
+            // Update the program with user inputs
+            program[0].operand2 = num1; // MOV R0, Number1
+            program[1].operand2 = num2; // MOV R1, Number2
+
+            // Execute the program
+            let interval = setInterval(() => {
+                if (PC < program.length) {
+                    let instruction = program[PC];
+                    executeInstruction(instruction);
+                    updateRegisters();
+                    highlightInstruction(PC + 1);
+                } else {
+                    clearInterval(interval); // Stop when the program ends
+                    alert(`Execution finished! Result in R0: ${registers.R0}`);
+                }
+            }, 1000); // Execute every second
+        }
+    </script>
+</body>
+</html>
